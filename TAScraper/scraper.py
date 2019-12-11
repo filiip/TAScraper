@@ -120,11 +120,11 @@ def crawl(driver, url, attempt):
     logging.debug("Scrap '{url}', attempt {attempt}".format(url=url, attempt=attempt))
     try:
         csv_file = open("my_results.csv", "w")
+        csv_writer = csv.writer(csv_file)
         driver.get(url)
         if attempt == 1:
             logging.info("Checking: {}".format(driver.title))
             csv_writer.writerow([driver.title])
-        csv_writer = csv.writer(csv_file)
 
         # Find the correct tab ith reviews
         for tab in driver.find_elements_by_xpath(REVIEW_TAB):
