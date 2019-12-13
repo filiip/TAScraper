@@ -23,7 +23,7 @@ INPUT = [
 
 # Xpaths
 REVIEW_TAB = ".//div[@id='REVIEWS' and @data-tab='TABS_REVIEWS']"
-TAB_CHECK = "//a[text()='Write a review']"
+TAB_CHECK = "//*[text()='Write a review']"
 PAGE_NUMS = ".//div[@class='pageNumbers']"
 MORE = ["//span[@class='location-review-review-list-parts-ExpandableReview__cta--2mR2g']",
         "//span[@class='taLnk ulBlueLinks']"]
@@ -35,6 +35,10 @@ REVIEW_TEXT = [".//p[@class='partial_entry']",
                ".//span"]
 NEXT = ".//a[contains(@class, 'next') and contains(@class, 'nav') and contains(@class, 'ui_button')]"
 SHOW_LESS = "//span[text()='Show less' or text()='Read less']"
+
+
+class NoConnectionError(Exception):
+    pass
 
 
 def exists(xpath, elem):
@@ -108,6 +112,21 @@ def _get_review_text(container):
     return text
 
 
+def _check_connection(driver):
+    """Check connection to the server is working was established,
+       raise exception if connection was not established
+
+    :param driver: selenium web driver with a loaded page
+    :type driver: selenium.webdriver.chrome.webdriver.WebDriver
+    """
+    try:
+        err = driver.find_element(By.CLASS_NAME, "error-code")
+    except:
+        logging.debug("Connection established")
+    else:
+        raise NoConnectionError("Could not connect to desired server -", err.text)
+
+
 def crawl(driver, url, attempt):
     """Crawl trough a given page and save review data to a csv file
 
@@ -122,6 +141,7 @@ def crawl(driver, url, attempt):
         csv_file = open("my_results.csv", "w")
         csv_writer = csv.writer(csv_file)
         driver.get(url)
+        _check_connection(driver)
         if attempt == 1:
             logging.info("Checking: {}".format(driver.title))
             csv_writer.writerow([driver.title])
